@@ -1,4 +1,14 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import ATM, Transaction, BankCard
+from .serializers import ATMSerializer
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from django.views import View
+import json
+from django.views.decorators.csrf import csrf_exempt
+
 from rest_framework.views import APIView
 from .serializers import *
 from .models import *
@@ -17,61 +27,89 @@ from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 
+
 class AdminRegisterView(APIView):
     def post(self, request):
         admin = AdminSerializer(data=request.data)
         if admin.is_valid():
             admin.save()
-            return Response({'data':admin.data, 'message':'Successfully created role'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"data": admin.data, "message": "Successfully created role"},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(admin.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AdminLoginView(APIView):
     def post(self, request, *args, **kwargs):
         admin = request.data.get("username")
         password = request.data.get("password")
         print(request.data)
-        user=None
+        user = None
         try:
-            user= Admin.objects.get(username=admin)
+            user = Admin.objects.get(username=admin)
         except ObjectDoesNotExist:
             pass
         if not user:
-            return Response({'message': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
         if not check_password(password, user.password):
-            return Response({'message': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
         user_serializer = User()
-        user_serializer.username=user.username
-        user_serializer.password=password
+        user_serializer.username = user.username
+        user_serializer.password = password
         user_serializer.save()
-        token,_ = Token.objects.get_or_create(user=user_serializer)
-        return Response({'data': AdminSerializer(user).data, 'token':token.key, "role":"admin"}, status=status.HTTP_200_OK)
+        token, _ = Token.objects.get_or_create(user=user_serializer)
+        return Response(
+            {"data": AdminSerializer(user).data, "token": token.key, "role": "admin"},
+            status=status.HTTP_200_OK,
+        )
+
 
 class EmployeeCreationView(APIView):
     def post(self, request):
         employee = EmployeeSerializer(data=request.data)
         if employee.is_valid():
             employee.save()
-            return Response({'data':employee.data, 'message':'Successfully created role'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"data": employee.data, "message": "Successfully created role"},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(employee.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class EmployeeManagementView(APIView):
     def get(self, request):
         employees = Employee.objects.all()
         employee_serializer = EmployeeSerializer(employees, many=True)
-        return Response({"data": employee_serializer.data, "message":"Success"}, status=status.HTTP_200_OK)
+        return Response(
+            {"data": employee_serializer.data, "message": "Success"},
+            status=status.HTTP_200_OK,
+        )
+
 
 class ClientManagementView(APIView):
     def get(self, request):
         clients = Client.objects.all()
         client_serializer = ClientSerializer(clients, many=True)
-        return Response({"data":client_serializer.data, "message": "Success"}, status=status.HTTP_200_OK)
-    
+        return Response(
+            {"data": client_serializer.data, "message": "Success"},
+            status=status.HTTP_200_OK,
+        )
+
     def put(self, request):
         client_email = request.data.get("email")
-        client =  Client.objects.get(email=client_email)
+        client = Client.objects.get(email=client_email)
         client.status = request.data.get("status")
-        return Response({"message":f"Client {request.data.get('status')} successfully !"}, status=status.HTTP_202_ACCEPTED)
-        
+        return Response(
+            {"message": f"Client {request.data.get('status')} successfully !"},
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+
 class ClientCreationView(APIView):
     def post(self, request):
         client = ClientSerializer(data=request.data)
@@ -82,10 +120,14 @@ class ClientCreationView(APIView):
                 message=f"Welcome {request.data.get('username')} to AICSCash, we are delighted to have you on board",
                 from_email="chriskameni25@gmail.com",
                 recipient_list=[f"{request.data.get('email')}"],
-                fail_silently=False
+                fail_silently=False,
             )
-            return Response({'data':client.data, 'message':'Success'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"data": client.data, "message": "Success"},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(client.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ClientLoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -93,63 +135,93 @@ class ClientLoginView(APIView):
         password = request.data.get("password")
         user = None
         try:
-            user= Client.objects.get(email=email)
+            user = Client.objects.get(email=email)
         except ObjectDoesNotExist:
             pass
         if not user:
-            return Response({'message': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
         if not check_password(password, user.password):
-            return Response({'message': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
         user_serializer = User()
-        user_serializer.username=user.username
-        user_serializer.password=password
+        user_serializer.username = user.username
+        user_serializer.password = password
         user_serializer.save()
-        token,_ = Token.objects.get_or_create(user=user_serializer)
-        return Response({'data': ClientSerializer(user).data, 'token':token.key, "role":"client"}, status=status.HTTP_200_OK)
+        token, _ = Token.objects.get_or_create(user=user_serializer)
+        return Response(
+            {"data": ClientSerializer(user).data, "token": token.key, "role": "client"},
+            status=status.HTTP_200_OK,
+        )
+
 
 class EmployeeLoginView(APIView):
     def post(self, request, *args, **kwargs):
         matricule = request.data.get("matricle")
         password = request.data.get("password")
-        user=None
+        user = None
         try:
-            user= Employee.objects.get(matricle=matricule)
+            user = Employee.objects.get(matricle=matricule)
         except ObjectDoesNotExist:
             pass
 
         if not user:
-            return Response({'message': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
         if not check_password(password, user.password):
-            return Response({'message': "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
         user_serializer = User()
-        user_serializer.username=user.username
-        user_serializer.password=password
+        user_serializer.username = user.username
+        user_serializer.password = password
         user_serializer.save()
-        token,_ = Token.objects.get_or_create(user=user_serializer)
-        return Response({'data': EmployeeSerializer(user).data, 'token':token.key, "role":"employee"}, status=status.HTTP_200_OK)
+        token, _ = Token.objects.get_or_create(user=user_serializer)
+        return Response(
+            {
+                "data": EmployeeSerializer(user).data,
+                "token": token.key,
+                "role": "employee",
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class BankAccountView(APIView):
     def post(self, request, *args, **kwargs):
         bank_card = BankCardSerializer(data=request.data)
         if bank_card.is_valid():
             bank_card.save()
-            return Response({'data':bank_card.data, 'message':'Success'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"data": bank_card.data, "message": "Success"},
+                status=status.HTTP_201_CREATED,
+            )
         print(bank_card.error_messages)
         return Response(bank_card.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def get(self, request, *args, **kwargs):
         bank_cards = BankCard.objects.all()
         bank_serializer = BankCardSerializer(bank_cards, many=True)
-        return Response({'data':bank_serializer.data, 'message':'Success'}, status=status.HTTP_200_OK)
+        return Response(
+            {"data": bank_serializer.data, "message": "Success"},
+            status=status.HTTP_200_OK,
+        )
 
-def generate_pdf_file(transaction_id, transaction_type, transaction_amount, date, employee):
+
+def generate_pdf_file(
+    transaction_id, transaction_type, transaction_amount, date, employee
+):
     from io import BytesIO
+
     buffer = BytesIO()
     p = canvas.Canvas(buffer)
- 
+
     # Create a PDF document
     p.drawString(100, 750, "AICSCash Receipt")
- 
+
     y = 700
     for i in range(1):
         p.drawString(100, y, f"Transaction Id: {transaction_id}")
@@ -158,19 +230,26 @@ def generate_pdf_file(transaction_id, transaction_type, transaction_amount, date
         p.drawString(100, y - 60, f"Amount: {transaction_amount} XAF")
         p.drawString(100, y - 80, f"Employee Name: {employee}")
         y -= 60
- 
+
     p.showPage()
     p.save()
- 
+
     buffer.seek(0)
-    return buffer 
+    return buffer
+
+
 class TransactionManagementView(APIView):
     def get(self, request):
         transactions = Transaction.objects.all()
-        T = TransactionAccount.objects.select_related("account_number").select_related("transaction_id")
+        T = TransactionAccount.objects.select_related("account_number").select_related(
+            "transaction_id"
+        )
         transaction_serializer = TransactionSerializer(transactions, many=True)
-        return Response({'data': transaction_serializer.data, 'message':'Success'}, status=status.HTTP_200_OK)
-    
+        return Response(
+            {"data": transaction_serializer.data, "message": "Success"},
+            status=status.HTTP_200_OK,
+        )
+
     def post(self, request, *args, **kwargs):
         parser_classes = (MultiPartParser, FormParser)
         transaction_type = request.data.get("transaction_type")
@@ -205,3 +284,101 @@ class TransactionManagementView(APIView):
         #     return FileResponse(generate_pdf_file(transaction_serializer.data.get("transaction_id"),transaction_type, transaction_amount, transaction_serializer.data.get("transaction_date"), employee), as_attachment=True, filename=f"Receipt {transaction_serializer.data.get('transaction_id')}.pdf")
         #     #return Response({'data':transaction_account.data, 'message':'Success'}, status=status.HTTP_201_CREATED)
         # return Response(transaction_account.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+def atm_withdrawal(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            account_number = data.get("account_number")
+            withdrawal_amount = float(data.get("withdrawal_amount"))
+            atm_id = data.get("atm_id")
+
+            card = BankCard.objects.get(account_number=account_number)
+
+            if card.balance < withdrawal_amount:
+                return JsonResponse({"error": "Insufficient funds"}, status=400)
+
+            atm = ATM.objects.get(id=atm_id)
+            if atm.atm_balance < withdrawal_amount:
+                return JsonResponse({"error": "Insufficient cash in ATM"}, status=400)
+
+            transaction = Transaction.objects.create(
+                client=card.client,
+                transaction_amount=withdrawal_amount,
+                atm=atm,
+                card=card,
+                transaction_type="withdrawal",
+            )
+
+            card.balance -= withdrawal_amount
+            card.save()
+
+            atm.atm_balance -= withdrawal_amount
+            atm.save()
+
+            return JsonResponse({"success": "Withdrawal successful"}, status=200)
+        except BankCard.DoesNotExist:
+            return JsonResponse({"error": "Account number not found"}, status=400)
+        except ATM.DoesNotExist:
+            return JsonResponse({"error": "ATM not found"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+class ATMView(APIView):
+
+    def get(self, request, atm_id=None):
+        if atm_id:
+            try:
+                atm = ATM.objects.get(id=atm_id)
+                serializer = ATMSerializer(atm)
+                return Response(serializer.data)
+            except ATM.DoesNotExist:
+                return Response(
+                    {"error": "ATM not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+
+        else:
+            atms = ATM.objects.all()
+            serializer = ATMSerializer(atms, many=True)
+
+            return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ATMSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, atm_id):
+
+        try:
+            atm = ATM.objects.get(id=atm_id)
+
+        except ATM.DoesNotExist:
+            return Response(
+                {"error": "ATM not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = ATMSerializer(atm, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, atm_id):
+        try:
+            atm = ATM.objects.get(id=atm_id)
+            atm.delete()
+            return Response(
+                {"success": "ATM deleted"}, status=status.HTTP_204_NO_CONTENT
+            )
+        except ATM.DoesNotExist:
+            return Response(
+                {"error": "ATM not found"}, status=status.HTTP_404_NOT_FOUND
+            )

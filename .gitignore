@@ -1,2 +1,3 @@
 ecash
-online_banking_and_atm/e_cash/migrations
+online_banking_and_atm/e_cash/migrations/models.py
+donfenv/
