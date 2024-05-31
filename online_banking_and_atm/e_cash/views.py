@@ -51,8 +51,9 @@ class EmployeeCreationView(APIView):
         employee = EmployeeSerializer(data=request.data)
         if employee.is_valid():
             employee.save()
-            return Response({'data':employee.data, 'message':'Successfully created role'}, status=status.HTTP_201_CREATED)
-        return Response(employee.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'data':employee.data, 'message':'Successfully created employee'}, status=status.HTTP_201_CREATED)
+        print(employee.errors["email"])
+        return Response(employee.errors["email"], status=status.HTTP_400_BAD_REQUEST)
 
 class EmployeeManagementView(APIView):
     def get(self, request):
@@ -85,7 +86,7 @@ class ClientCreationView(APIView):
                 fail_silently=False
             )
             return Response({'data':client.data, 'message':'Success'}, status=status.HTTP_201_CREATED)
-        return Response(client.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(client.errors["email"], status=status.HTTP_400_BAD_REQUEST)
 
 class ClientLoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -176,32 +177,53 @@ class TransactionManagementView(APIView):
         transaction_type = request.data.get("transaction_type")
         transaction_amount = request.data.get("transaction_amount")
         account_number = request.data.get("account_number")
-        print(request.FILES["doc1"])
-        # transaction_details = {
-        #     "transaction_type": transaction_type,
-        #     "transaction_amount": transaction_amount,
-        #     "docs": request.FILES["docs"]
-        # }
-        # transaction_serializer = TransactionSerializer(data=transaction_details)
-        # account = BankCard.objects.get(account_number = account_number)
-        # if transaction_type == "deposit":
-        #     account.balance = account.balance + float(transaction_amount)
-        # elif transaction_type == "withdraw":
-        #     if account.balance < float(transaction_amount):
-        #         return Response({"message": "Don't have enough money to proceed"}, status=status.HTTP_400_BAD_REQUEST)
-        #     account.balance = account.balance - float(transaction_amount)
-        # account.save()
-        # if transaction_serializer.is_valid():
-        #     transaction_serializer.save()
-        # trans_account_details = {
-        #     "transaction_id": transaction_serializer.data.get("transaction_id"),
-        #     "account_number": account.account_number,
-        #     "emp_matricle": request.data.get("emp_matricle")
-        # }
-        # transaction_account = TransactionAccountSerializer(data=trans_account_details)
-        # if transaction_account.is_valid():
-        #     transaction_account.save()
-        #     employee = Employee.objects.get(matricle=request.data.get("emp_matricle")).username
-        #     return FileResponse(generate_pdf_file(transaction_serializer.data.get("transaction_id"),transaction_type, transaction_amount, transaction_serializer.data.get("transaction_date"), employee), as_attachment=True, filename=f"Receipt {transaction_serializer.data.get('transaction_id')}.pdf")
-        #     #return Response({'data':transaction_account.data, 'message':'Success'}, status=status.HTTP_201_CREATED)
-        # return Response(transaction_account.errors, status=status.HTTP_400_BAD_REQUEST)
+        number_files = request.data.get("number_files")
+        all_docs = []
+        account = BankCard.objects.get(account_number = account_number)
+        if transaction_type == "deposit":
+            account.balance = account.balance + float(transaction_amount)
+        elif transaction_type == "withdraw":
+            if account.balance < float(transaction_amount):
+                return Response({"message": "Don't have enough money to proceed"}, status=status.HTTP_400_BAD_REQUEST)
+            account.balance = account.balance - float(transaction_amount)
+        account.save()
+        transaction_details = {
+            "transaction_type": transaction_type,
+            "transaction_amount": transaction_amount,
+            "all_docs": all_docs
+        }
+        transaction_serializer = TransactionSerializer(data=transaction_details)
+        if transaction_serializer.is_valid():
+            transaction_serializer.save()
+        else:
+            return Response({"message":transaction_serializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
+        trans_account_details = {
+            "transaction_id": transaction_serializer.data.get("transaction_id"),
+            "account_number": account_number,
+            "emp_matricle": request.data.get("emp_matricle")
+        }
+        for i in range(int(number_files)):
+            docs = {
+                "doc": request.FILES[f"doc{i}"],
+                "transaction_id": trans_account_details["transaction_id"]
+            }
+            document_serializer = DocumentSerializer(data = docs)
+            if document_serializer.is_valid():
+                document_serializer.save()
+            else:
+                return print(document_serializer.errors)
+        transaction_account = TransactionAccountSerializer(data=trans_account_details)
+        if transaction_account.is_valid():
+            transaction_account.save()
+            employee = Employee.objects.get(matricle=request.data.get("emp_matricle")).username
+            return FileResponse(generate_pdf_file(transaction_serializer.data.get("transaction_id"),transaction_type, transaction_amount, transaction_serializer.data.get("transaction_date"), employee), as_attachment=True, filename=f"Receipt {transaction_serializer.data.get('transaction_id')}.pdf")
+            #return Response({'data':transaction_account.data, 'message':'Success'}, status=status.HTTP_201_CREATED)
+        return Response(transaction_account.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            request.user.auth_token.delete()
+            return Response({'message': 'Successfully logged out.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

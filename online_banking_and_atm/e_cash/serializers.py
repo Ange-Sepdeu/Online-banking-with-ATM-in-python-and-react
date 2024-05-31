@@ -28,6 +28,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = '__all__'
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
+        validated_data['tel'] = int(validated_data['tel'])
         employee = Employee.objects.create(**validated_data)
         employee.save()
         return employee
@@ -64,7 +65,6 @@ class DocumentSerializer(serializers.ModelSerializer):
         model=Documents
         fields = '__all__'
     def create(self, validated_data):
-        uploaded_images = validated_data.pop('all_docs')
-        for doc in uploaded_images:
-           document = Documents.objects.create(doc)
+        document = Documents.objects.create(**validated_data)
+        document.save()
         return document
