@@ -80,11 +80,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ecash', #change it databasename
-        'USER': 'root', #change it database user name
-        'PASSWORD': '', # change user database password
+        'USER': 'postgres', #change it database user name
+        'PASSWORD': '1234', # change user database password
         'HOST': 'localhost',  
         'PORT': '5432',           
     }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
 }
 
 
@@ -118,9 +124,9 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ORIGIN_WHITELIST = (
-    'http://localhost:5173'
-)
+#CORS_ORIGIN_WHITELIST = (
+ #   'http://localhost:5173'
+#)
 
 
 # Static files (CSS, JavaScript, Images)
@@ -134,3 +140,11 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT = BASE_DIR / "uploads/"
 MEDIA_URL = '/media/'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  
+EMAIL_USE_TLS = True  
+EMAIL_HOST_USER = 'morelle.ngouemeta6@gmail.com'  
+EMAIL_HOST_PASSWORD = 'tchinda07'

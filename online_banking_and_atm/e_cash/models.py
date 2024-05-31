@@ -8,12 +8,12 @@ class AuthManager(models.Model):
 class Role(models.Model):
     role_name = models.CharField(max_length=20, unique=True)
 
-class User(models.Model, AuthManager):
+class User( AuthManager):
     username = models.CharField(max_length=20)
     email = models.CharField(max_length=20, unique=True)
     time_created = models.DateTimeField(auto_now_add=True)
     password = models.CharField(max_length=20)
-    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+   # role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
 class BankAccount(models.Model):
     account_number = models.CharField(max_length=20, unique=True)
