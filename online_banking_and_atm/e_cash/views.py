@@ -176,7 +176,7 @@ class TransactionManagementView(APIView):
         transaction_type = request.data.get("transaction_type")
         transaction_amount = request.data.get("transaction_amount")
         account_number = request.data.get("account_number")
-        print(request.FILES["doc0"])
+        print(request.FILES["doc1"])
         # transaction_details = {
         #     "transaction_type": transaction_type,
         #     "transaction_amount": transaction_amount,
