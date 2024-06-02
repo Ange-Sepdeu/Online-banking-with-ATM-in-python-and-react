@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from simple_history.models import HistoricalRecords
 import uuid
 
+
 class Admin(models.Model):
     admin_id = models.CharField(
         max_length=64, primary_key=True, default="admin" + str(uuid.uuid4())
@@ -11,6 +12,7 @@ class Admin(models.Model):
     time_created = models.DateTimeField(auto_now_add=True)
     password = models.TextField()
     history = HistoricalRecords()
+
 
 class Employee(models.Model):
     matricle = models.CharField(max_length=80, primary_key=True)
@@ -33,7 +35,9 @@ class Client(models.Model):
     history = HistoricalRecords()
 
 class BankCard(models.Model):
-    account_number = models.CharField(max_length=86, unique=True, primary_key=True, default=uuid.uuid4)
+    account_number = models.CharField(
+        max_length=86, unique=True, primary_key=True, default=uuid.uuid4
+    )
     balance = models.FloatField(default=25000)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     history = HistoricalRecords()
@@ -57,7 +61,9 @@ class Transaction(models.Model):
         ("DEPOSIT", "Deposit"),
         ("WITHDRAWAL", "Withdrawal"),
     ]
-    transaction_id = models.CharField(max_length=86,unique=True, primary_key=True, default=uuid.uuid4)
+    transaction_id = models.CharField(
+        max_length=86, unique=True, primary_key=True, default=uuid.uuid4
+    )
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
     transaction_date = models.DateTimeField(auto_now_add=True)
     transaction_amount = models.FloatField()
@@ -67,9 +73,10 @@ class Transaction(models.Model):
         return f"{self.transaction_id}: {self.transaction_amount} XAF"
 
     def clean(self) -> None:
-        if self.transaction_amount<0:
+        if self.transaction_amount < 0:
             raise ValidationError("Transaction amount can't be negative")
         return super().clean()
+
 
 class Documents(models.Model):
     document_id = models.CharField(max_length=120, primary_key=True, default=uuid.uuid4)
@@ -77,11 +84,13 @@ class Documents(models.Model):
     transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
+
 class TransactionAccount(models.Model):
     transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE)
     account_number = models.ForeignKey(BankCard, on_delete=models.CASCADE)
     emp_matricle = models.ForeignKey(Employee, on_delete=models.CASCADE)
     history = HistoricalRecords()
+
 
 class ATM(models.Model):
     atm_id = models.CharField(max_length=64, primary_key=True, default=uuid.uuid4)
@@ -101,9 +110,12 @@ class ATM(models.Model):
         self.clean()
         return super().save(*args, **kwargs)
 
+
 class ATMTransactAccount(models.Model):
     atm_id = models.ForeignKey(ATM, on_delete=models.CASCADE)
     transaction_id = models.ForeignKey(Transaction, on_delete=models.CASCADE)
     account_number = models.ForeignKey(BankCard, on_delete=models.CASCADE)
-    emp_matricle = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)
+    emp_matricle = models.ForeignKey(
+        Employee, on_delete=models.CASCADE, blank=True, null=True
+    )
     history = HistoricalRecords()
