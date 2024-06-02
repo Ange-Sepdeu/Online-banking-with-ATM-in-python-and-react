@@ -1,0 +1,7 @@
+import React from 'react'
+
+export default function Settings() {
+  return (
+    <div className='p-8 text-[24px] font-bold'>Settings</div>
+  )
+}

@@ -14,16 +14,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path
 from e_cash import views
 from django.conf import settings
 from django.conf.urls.static import static
+from e_cash.views import ATMView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/client-login/', views.ClientLoginView.as_view(), name="client-login"),
-    path('api/auth/admin-login/', views.ClientLoginView.as_view(), name="client-login"),
+    path('api/auth/admin-login/', views.AdminLoginView.as_view(), name="client-login"),
     path('api/auth/employee-login/', views.EmployeeLoginView.as_view(), name="employee-login"),
     path('api/auth/client-register/', views.ClientCreationView.as_view(), name="client-creation"),
     path('api/auth/admin-register/', views.AdminRegisterView.as_view(), name="admin-register"),
@@ -31,5 +33,9 @@ urlpatterns = [
     path('api/bankaccount/', views.BankAccountView.as_view(), name="bank-account-add"),
     path('api/transaction/', views.TransactionManagementView.as_view(), name="transaction-add"),
     path('api/employee/', views.EmployeeManagementView.as_view(), name="employee-management"),
-    path("api/client/", views.ClientManagementView.as_view(), name="client-management")
+    path("api/client/", views.ClientManagementView.as_view(), name="client-management"),
+    path("api/client/atm", views.ClientAtmTransactions.as_view(), name="client-atm-transaction"),
+    path("api/atm/withdrawal/", views.AtmWithdrawalView.as_view(), name="atm_withdrawal"),
+    path("api/atm/", ATMView.as_view(), name="atm_list_create"),
+    path("api/atm/ud", views.ATMUpdateDelete.as_view(), name="atm_update_delete"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

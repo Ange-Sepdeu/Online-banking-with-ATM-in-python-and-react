@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} |
+{{ _('AICS Cash') }}{% endblock %}
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">{{ _('AICS Cash
+administration') }}</a></div>
+
+{% if user.is_anonymous %}
+{% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+{% block nav-global %}{% endblock %}
+
+
