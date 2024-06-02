@@ -22,7 +22,6 @@ class Employee(models.Model):
     tel = models.PositiveBigIntegerField()
     history = HistoricalRecords()
 
-
 class Client(models.Model):
     client_id = models.CharField(max_length=120, primary_key=True, default=uuid.uuid4)
     username = models.CharField(max_length=100)
@@ -32,7 +31,6 @@ class Client(models.Model):
     status = models.CharField(max_length=20)
     tel = models.PositiveBigIntegerField()
     history = HistoricalRecords()
-
 
 class BankCard(models.Model):
     account_number = models.CharField(max_length=86, unique=True, primary_key=True, default=uuid.uuid4)
@@ -53,26 +51,6 @@ class BankCard(models.Model):
     def save(self, *args, **kwargs) -> None:
         self.clean()
         return super().save(*args, **kwargs)
-
-
-# class Transaction(models.Model):
-#     transaction_id = models.CharField(unique=True, primary_key=True, default=uuid.uuid4)
-#     transaction_type = models.CharField(max_length=20)
-#     transaction_date = models.DateTimeField(auto_now_add=True)
-#     transaction_amount = models.FloatField()
-#     history = HistoricalRecords()
-
-#     def __str__(self) -> str:
-#         return f"{self.transaction_id}: {self.transaction_amount} XAF"
-
-#     def clean(self) -> None:
-#         if self.transaction_amount < 0:
-#             raise ValidationError("The amount of the transaction cannot be less than 0")
-#         return super().clean()
-
-#     def save(self, *args, **kwargs) -> None:
-#         self.clean()
-#         return super().save(*args, **kwargs)
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = [

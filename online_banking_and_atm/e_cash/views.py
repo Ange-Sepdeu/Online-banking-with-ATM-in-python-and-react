@@ -333,10 +333,7 @@ class TransactionManagementView(APIView):
         if transaction_account.is_valid():
             transaction_account.save()
             employee = Employee.objects.get(matricle=request.data.get("emp_matricle")).username
-            #message = EmailMessage(f"{transaction_type} successfull", "A new transaction was initiated on your account, attached is the receipt","chriskameni25@gmail.com",[client.email])
-            file_blob = generate_pdf_file(transaction_serializer.data.get("transaction_id"),transaction_type, transaction_amount, transaction_serializer.data.get("transaction_date"), employee, client.username,account_number)
-            #message.attach(f"{transaction_type} receipt.pdf", file_blob, "application/pdf")
-            return FileResponse(file_blob, as_attachment=True, filename=f"Receipt {transaction_serializer.data.get('transaction_id')}.pdf")
+            return FileResponse(generate_pdf_file(transaction_serializer.data.get("transaction_id"),transaction_type, transaction_amount, transaction_serializer.data.get("transaction_date"), employee, client.username,account_number), as_attachment=True, filename=f"Receipt {transaction_serializer.data.get('transaction_id')}.pdf")
             #return Response({'data':transaction_account.data, 'message':'Success'}, status=status.HTTP_201_CREATED)
         return Response(transaction_account.errors, status=status.HTTP_400_BAD_REQUEST)
 
