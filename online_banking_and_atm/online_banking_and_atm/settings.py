@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "simple_history",
     "e_cash",
-    "dbbackup"
+    "dbbackup",
 ]
 
 REST_FRAMEWORK = {
@@ -103,9 +103,9 @@ WSGI_APPLICATION = "online_banking_and_atm.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "aics_cash",  # change it databasename
+        "NAME": "ecash",  # change it databasename
         "USER": "postgres",  # change it database user name
-        "PASSWORD": "Centre125fq",  # change user database password
+        "PASSWORD": "root",  # change user database password
         "HOST": "localhost",
         "PORT": "5432",
     }
@@ -142,9 +142,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:5173"
-    ]
+CORS_ORIGIN_WHITELIST = ["http://localhost:5173"]
 
 
 # Static files (CSS, JavaScript, Images)
@@ -159,5 +157,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_ROOT = BASE_DIR / "uploads/"
 MEDIA_URL = "/media/"
 
-DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location': '/backups/'}
+DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
+DBBACKUP_STORAGE_OPTIONS = {"location": "/backups/"}
